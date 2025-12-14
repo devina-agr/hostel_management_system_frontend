@@ -58,7 +58,10 @@ export default function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       });
       if (!response.ok) {
         const errText = await response.text();
@@ -66,6 +69,12 @@ export default function Login() {
       }
 
       const result = await response.json();
+      console.log("email:", formData.email);
+      console.log("token:", formData.token);
+      console.log("role:",formData.role);
+      // console.log("rolevalue:",formData.role[0]);
+
+
       console.log("✅ Login success:", result);
 
       if (result.token) {
