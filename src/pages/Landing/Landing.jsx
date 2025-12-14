@@ -44,7 +44,7 @@ export default function Landing() {
           </div>
 
           <p className="text-gray-800 text-base md:text-lg max-w-xl mx-auto md:mx-0 leading-relaxed">
-            A unified hostel management system that matches students with <p className="text-black inline font-bold"> compatible roommates</p> based on preferences.
+            A unified hostel management system that matches students with <span className="text-black inline font-bold"> compatible roommates</span> based on preferences.
 Streamlines complaints and mess feedback .
           </p>
 

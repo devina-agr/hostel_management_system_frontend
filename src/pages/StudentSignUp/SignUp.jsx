@@ -31,8 +31,7 @@ export default function SignUp() {
       [e.target.name]: e.target.value
     });
   };
-
-  const handleSubmit = async() => {
+const handleSubmit = async () => {
     console.log("Sending signup data:", formData);
 
     try {
@@ -49,18 +48,21 @@ export default function SignUp() {
         throw new Error(err || "Failed to register");
       }
 
-      const result = await response.json();   // result has "token"
+      const result = await response.json();
 
-console.log("JWT Token received:", result.token);
+      console.log("Registration response:", result);
+      console.log("JWT Token received:", result.token);
 
-localStorage.setItem("authToken", result.token);  // SAVE TOKEN HERE
-localStorage.setItem("userId", result.id);
-localStorage.setItem("role", result.role);
+      localStorage.setItem("authToken", result.token);
+      localStorage.setItem("email", result.email);
+      localStorage.setItem("role", JSON.stringify(result.role));
 
-window.location.href = "/dashboard";
+      alert("Registration successful! Redirecting to dashboard...");
+
+      window.location.href = "/StudentDashboard";
 
     } catch (error) {
-      console.error("❌ Registration failed:", error);
+      console.error("Registration failed:", error);
       alert("Error: " + error.message);
     }
   };

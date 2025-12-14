@@ -73,7 +73,7 @@ export default function Login() {
       }
 
       alert("Login successful!");
-      window.location.href = "/dashboard";
+      window.location.href = "/WardenDashboard";
     } catch (error) {
       console.error("❌ Login failed:", error);
       alert("Error: " + error.message);
