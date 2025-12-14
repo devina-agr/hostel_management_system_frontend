@@ -1,12 +1,9 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
 import Landing from "./pages/Landing/Landing";
 import SignUp from "./pages/StudentSignUp/SignUp";
 import Login from "./pages/StudentLogin/Login";
 import DefaultLayout from "./layouts/DefaultLayout.jsx";
 import AuthLayout from "./layouts/AuthLayout.jsx";
-// import ProtectedRoute from "./components/ProtectedRoute";
 import StudentDashboard from "./pages/StudentDashboard/StudentDashboard";
 import WardenDashboard from "./pages/WardenDashboard/WardenDashboard.jsx";
 
@@ -22,7 +19,6 @@ export default function App() {
             </DefaultLayout>
           }
         />
-
         <Route
           path="/signup"
           element={
