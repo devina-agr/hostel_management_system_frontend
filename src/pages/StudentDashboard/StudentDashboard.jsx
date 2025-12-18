@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { UtensilsCrossed, MessageSquare, AlertCircle, Star, X, User, Bell, Upload } from 'lucide-react';
 
 const StudentDashboard = () => {
@@ -9,7 +11,7 @@ const StudentDashboard = () => {
       LUNCH: ['Dal Tadka', 'Jeera Rice', 'Roti', 'Mixed Veg Curry', 'Salad', 'Curd'],
       SNACKS: ['Samosa', 'Green Chutney', 'Tea/Coffee'],
       DINNER: ['Rajma Curry', 'Steamed Rice', 'Roti', 'Aloo Gobi', 'Pickle', 'Sweet Dish']
-    }
+    },
   });
   const [complaints, setComplaints] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
@@ -17,6 +19,17 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showComplaintModal, setShowComplaintModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+const isProfileComplete = profile?.profileComplete === true;
+  const navigate = useNavigate();
+  
+  const location = useLocation();
+
+useEffect(() => {
+  fetchProfile();
+}, [location.state]);
+
+console.log("PROFILE STATE:", profile);
+console.log("PROFILE COMPLETE:", profile?.profileComplete);
 
   const [complaintForm, setComplaintForm] = useState({
     title: '',
@@ -38,6 +51,12 @@ const StudentDashboard = () => {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${getAuthToken()}`
   };
+
+  useEffect(() => {
+  if (profile) {
+    console.log("PROFILE FROM BACKEND:", profile);
+  }
+}, [profile]);
 
   useEffect(() => {
     fetchAllData();
@@ -73,23 +92,38 @@ const StudentDashboard = () => {
     }
   };
 
-  const fetchMenu = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/menu`, {
-        headers: authHeaders
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.length > 0) {
-          const today = getDayOfWeek().toUpperCase();
-          const todayMenu = data.find(m => m.day === today);
-          setMenuData(todayMenu || data[0]);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching menu:', error);
-    }
-  };
+const fetchMenu = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/menu`, {
+      headers: authHeaders
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+
+    // menu for hostel (only one object)
+    const hostelMenu = data[0];
+
+    // get today in BACKEND format
+    const today = new Date().toLocaleDateString("en-US", {
+      weekday: "long"
+    }).toUpperCase(); // MONDAY, TUESDAY...
+
+    // extract meals of today
+    const todayMeals = hostelMenu.meals[today];
+
+    setMenuData({
+      day: today,
+      meals: todayMeals
+    });
+
+  } catch (err) {
+    console.error("Menu fetch failed", err);
+  }
+};
+
+
 
   const fetchMyComplaints = async () => {
     try {
@@ -237,8 +271,26 @@ const StudentDashboard = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-1">Dashboard</h2>
       
         </div>
+{profile && !isProfileComplete && (
+  <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg mb-6">
+    <h3 className="font-semibold text-gray-900">
+      Complete Your Profile
+    </h3>
+    <p className="text-sm text-gray-700 mb-2">
+      Please complete your profile to access all hostel services.
+    </p>
+    <button
+      onClick={() => navigate("/student/profile")}
+      className="px-4 py-2 bg-blue-500 text-white rounded text-sm"
+    >
+      Complete Profile
+    </button>
+  </div>
+)}
 
-        <div className="bg-blue-50 p-4 rounded-lg mb-6 border-l-4 border-blue-500">
+
+
+        {/* <div className="bg-blue-50 p-4 rounded-lg mb-6 border-l-4 border-blue-500">
           <div className="flex items-start gap-3">
             <MessageSquare className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
@@ -249,7 +301,7 @@ const StudentDashboard = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="bg-white rounded-lg shadow-sm mb-6">
           <div className="p-4 bg-orange-50 flex items-center justify-between">
@@ -343,9 +395,13 @@ const StudentDashboard = () => {
               </div>
               <p className="text-xs text-center text-gray-500 mb-3">Complete your profile to unlock matches.</p>
               
-              <button className="w-full px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium hover:bg-blue-600 mt-auto">
-                Update Preferences
-              </button>
+              <button
+  onClick={() => navigate("/student/preferences")}
+  className="w-full px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium hover:bg-blue-600 mt-auto"
+>
+  Fill Preferences
+</button>
+
             </div>
 
             <div className="bg-white rounded-lg shadow-sm p-5 flex flex-col" style={{minHeight: '280px'}}>
@@ -360,13 +416,19 @@ const StudentDashboard = () => {
               </div>
               
               <div className="flex-1 flex justify-center items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className="w-8 h-8 text-gray-300 cursor-pointer hover:text-yellow-400"
-                  />
-                ))}
-              </div>
+  {[1, 2, 3, 4, 5].map((star) => (
+    <Star
+      key={star}
+      onClick={() => setFeedbackForm({ ...feedbackForm, rating: star })}
+      className={`w-8 h-8 cursor-pointer ${
+        star <= feedbackForm.rating
+          ? 'text-yellow-400 fill-yellow-400'
+          : 'text-gray-300 hover:text-yellow-300'
+      }`}
+    />
+  ))}
+</div>
+
               
               <button
                 onClick={() => setShowFeedbackModal(true)}

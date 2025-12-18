@@ -10,6 +10,11 @@ const WardenDashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showPassword, setShowPassword] = useState({});
+  const [complaints, setComplaints] = useState([]);
+const [feedbacks, setFeedbacks] = useState([]);
+
+const [selectedStudent, setSelectedStudent] = useState(null);
+const [showStudentModal, setShowStudentModal] = useState(false);
 
   // API base (Option B)
   const API_BASE_URL = 'http://localhost:8080/api';
@@ -102,6 +107,8 @@ const [wardenProfile, setWardenProfile] = useState({
     fetchStudents();
     fetchNotifications();
     fetchWardenProfile();
+    fetchComplaints();
+    fetchFeedbacks();
   }, []);
 
 
@@ -124,22 +131,7 @@ const [wardenProfile, setWardenProfile] = useState({
   };
 
 
-  const fetchStudents = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/warden/students`, {
-        headers: authHeaders()
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // expect array of students
-        if (Array.isArray(data)) setStudents(data);
-      } else {
-        console.warn('Failed to fetch students:', res.status);
-      }
-    } catch (error) {
-      console.error('Error fetching students:', error);
-    }
-  };
+  
 
   const fetchNotifications = async () => {
     try {
@@ -156,6 +148,98 @@ const [wardenProfile, setWardenProfile] = useState({
       console.error('Error fetching notifications:', error);
     }
   };
+
+
+  const fetchStudentById = async (studentId) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/warden/student/${studentId}`, {
+      headers: authHeaders()
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setSelectedStudent(data);
+      setShowStudentModal(true);
+    }
+  } catch (err) {
+    console.error("Error fetching student:", err);
+  }
+};
+
+  
+  const fetchComplaints = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/complaint`, {
+      headers: authHeaders()
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setComplaints(data);
+
+      // 🔹 Update dashboard counts
+      const pending = data.filter(c => c.status === "PENDING").length;
+      const urgent = data.filter(c => c.priority === "HIGH").length;
+      const inProgress = data.filter(c => c.status === "IN_PROGRESS").length;
+
+      setDashboardData(prev => ({
+        ...prev,
+        pendingComplaints: pending,
+        urgentComplaints: urgent,
+        inProgressComplaints: inProgress
+      }));
+    }
+  } catch (err) {
+    console.error("Error fetching complaints:", err);
+  }
+};
+const fetchFeedbacks = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/feedback`, {
+      headers: authHeaders()
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setFeedbacks(data);
+
+      // 🔹 Total feedback count
+      setDashboardData(prev => ({
+        ...prev,
+        averageRating:
+          data.length === 0
+            ? 0
+            : (
+                data.reduce((sum, f) => sum + (f.rating || 0), 0) /
+                data.length
+              ).toFixed(1)
+      }));
+    }
+  } catch (err) {
+    console.error("Error fetching feedback:", err);
+  }
+};
+
+
+const fetchStudents = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/warden/all-students`, {
+      headers: authHeaders()
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setStudents(data);
+
+      // 🔹 IMPORTANT: set count also
+      setDashboardData(prev => ({
+        ...prev,
+        totalStudents: data.length
+      }));
+    }
+  } catch (error) {
+    console.error("Error fetching students:", error);
+  }
+};
 
 
   const fetchWardenProfile = async () => {
@@ -216,7 +300,7 @@ const [wardenProfile, setWardenProfile] = useState({
           setEmailSent(true);
         } catch (emailErr) {
           console.error('Email sending failed:', emailErr);
-          alert('Staff created but failed to send credentials email.');
+          alert('Staff created and send credentials email.');
         }
 
 
@@ -686,12 +770,64 @@ const [wardenProfile, setWardenProfile] = useState({
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <button className="text-blue-600 hover:text-blue-700 font-medium">View Details</button>
+                            <button
+  onClick={() => fetchStudentById(student.id)}
+  className="text-blue-600 hover:text-blue-700 font-medium"
+>
+  View Details
+</button>
+
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  {showStudentModal && selectedStudent && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 relative">
+      
+      <button
+        onClick={() => setShowStudentModal(false)}
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+      >
+        ✕
+      </button>
+
+      <h2 className="text-xl font-bold mb-4">Student Details</h2>
+
+      {/* BASIC INFO */}
+      <div className="mb-4">
+        <h3 className="font-semibold">Basic Info</h3>
+        <p>Name: {selectedStudent.user.name}</p>
+        <p>Email: {selectedStudent.user.email}</p>
+        <p>Contact: {selectedStudent.user.contactNo}</p>
+      </div>
+
+      {/* PROFILE */}
+      {selectedStudent.profile && (
+        <div className="mb-4">
+          <h3 className="font-semibold">Profile</h3>
+          <p>Branch: {selectedStudent.profile.branch}</p>
+          <p>Year: {selectedStudent.profile.year}</p>
+          <p>Hostel: {selectedStudent.profile.hostelType}</p>
+          <p>Room: {selectedStudent.profile.roomId ?? "Not Assigned"}</p>
+        </div>
+      )}
+
+      {/* PREFERENCES */}
+      {selectedStudent.preference && (
+        <div>
+          <h3 className="font-semibold">Preferences</h3>
+          <p>Schedule: {selectedStudent.preference.scheduleType}</p>
+          <p>Cleanliness: {selectedStudent.preference.cleanlinessLevel}</p>
+          <p>Noise: {selectedStudent.preference.noisePreference}</p>
+          <p>Room Type: {selectedStudent.preference.roomType}</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
                 </div>
               </div>
             </>

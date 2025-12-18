@@ -1,52 +1,58 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function PreferenceForm() {
   const [formData, setFormData] = useState({
-    scheduleType: '',
-    cleanlinessLevel: '',
-    noisePreference: '',
-    studyPreference: '',
-    allergy: '',
-    hobbies: [],
-    roomTempPreference: '',
-    roomType: ''
-  });
+  scheduleType: "",
+  cleanlinessLevel: "",
+  noisePreference: "",
+  studyPreference: "",
+  allergy: "",
+  roomTempPreference: "",
+  roomType: "",
 
+  });
+ const navigate = useNavigate();  
   const [progress, setProgress] = useState(0);
 
   const handleSelectChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    calculateProgress();
+  setFormData(prev => ({
+    ...prev,
+    [field]: value
+  }));
   };
+  useEffect(() => {
+  const fields = Object.keys(formData);
+  const filled = fields.filter(key => formData[key] !== "").length;
+  setProgress((filled / fields.length) * 100);
+  }, [formData]);
+  
 
-  const handleHobbyToggle = (hobby) => {
-    setFormData(prev => ({
-      ...prev,
-      hobbies: prev.hobbies.includes(hobby)
-        ? prev.hobbies.filter(h => h !== hobby)
-        : [...prev.hobbies, hobby]
-    }));
-    calculateProgress();
-  };
 
-  const calculateProgress = () => {
-    const fields = Object.keys(formData);
-    const filled = fields.filter(key => {
-      if (key === 'hobbies') return formData[key].length > 0;
-      return formData[key] !== '';
-    }).length;
-    setProgress((filled / fields.length) * 100);
-  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Preference Form Submitted:', formData);
-    // Redirect to dashboard or call API
-    window.location.href = '/dashboard';
-  };
+
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const res = await fetch("http://localhost:8080/api/preference", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (!res.ok) {
+    alert("Failed to submit preference");
+    return;
+  }
+
+  alert("Preferences saved successfully!");
+  navigate("/student-dashboard");
+};
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -181,29 +187,6 @@ export default function PreferenceForm() {
               </select>
             </div>
 
-            {/* Hobbies */}
-            <div>
-              <label className="flex items-center text-sm font-medium text-gray-700 mb-3">
-                <span className="text-pink-500 mr-2">🎨</span>
-                What are you into?
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {['MUSIC', 'CODING', 'DANCE', 'ART', 'READING', 'OUTDOOR_GAMES', 'OTHERS'].map((hobby) => (
-                  <button
-                    key={hobby}
-                    type="button"
-                    onClick={() => handleHobbyToggle(hobby)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      formData.hobbies.includes(hobby)
-                        ? 'bg-[#1B3C53] text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {hobby.charAt(0) + hobby.slice(1).toLowerCase().replace('_', ' ')}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Room & Well-being */}
@@ -237,17 +220,17 @@ export default function PreferenceForm() {
                   Your ideal room setup?
                 </label>
                 <select
-                  value={formData.roomType}
-                  onChange={(e) => handleSelectChange('roomType', e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B3C53] bg-gray-50"
-                >
-                  <option value="">Select...</option>
-                  <option value="SINGLE">A room all to myself</option>
-                  <option value="DOUBLE">Double (2 people)</option>
-                  <option value="TRIPLE">Triple (3 people)</option>
-                  <option value="QUAD">Quad (4 people)</option>
-                </select>
+  value={formData.roomType}
+  onChange={(e) => handleSelectChange("roomType", e.target.value)}
+  required
+>
+  <option value="">Select Room Type</option>
+  <option value="ONE">Single (1 Person)</option>
+  <option value="TWO">Double (2 People)</option>
+  <option value="THREE">Triple (3 People)</option>
+  <option value="FOUR">Four Sharing</option>
+  <option value="FIVE">Five Sharing</option>
+</select>
               </div>
             </div>
           </div>

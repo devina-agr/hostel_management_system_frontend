@@ -59,7 +59,7 @@ const handleSubmit = async () => {
 
       alert("Registration successful! Redirecting to dashboard...");
 
-      window.location.href = "/StudentDashboard";
+      window.location.href = "/Student-dashboard";
 
     } catch (error) {
       console.error("Registration failed:", error);
