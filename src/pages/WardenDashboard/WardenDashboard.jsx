@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, AlertTriangle, Star, UserPlus, Settings, Bell, Search, ChevronRight, X, Check, Clock, UserCheck, Building2, Phone, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 const WardenDashboard = () => {
   // Local UI state (unchanged)
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -12,7 +12,7 @@ const WardenDashboard = () => {
   const [showPassword, setShowPassword] = useState({});
 
   // API base (Option B)
-  const API_BASE_URL = 'http://localhost:8080/api';
+  const API_BASE_URL = `${API_URL}`;
 
   const getAuthToken = () => localStorage.getItem('authToken');
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UtensilsCrossed, MessageSquare, AlertCircle, Star, X, User, Bell, Upload } from 'lucide-react';
-
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 const StudentDashboard = () => {
   const [menuData, setMenuData] = useState({
     day: 'MONDAY',
@@ -29,7 +29,7 @@ const StudentDashboard = () => {
     comment: ''
   });
 
-  const API_BASE_URL = 'http://localhost:8080/api';
+  const API_BASE_URL = `${API_URL}`;
   
   const getAuthToken = () => localStorage.getItem('authToken');
   

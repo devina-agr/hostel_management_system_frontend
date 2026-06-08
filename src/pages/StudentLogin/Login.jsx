@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -53,7 +54,7 @@ export default function Login() {
   const handleSubmit = async () => {
     console.log("Login Data", formData);
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch( `${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
