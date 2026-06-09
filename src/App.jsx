@@ -38,6 +38,15 @@ export default function App() {
         />
 
         <Route
+          path="/Login"
+          element={
+            <DefaultLayout>
+              <Login />
+            </DefaultLayout>
+          }
+        />
+
+        <Route
           path="/StudentDashboard"
           element={
             <AuthLayout>

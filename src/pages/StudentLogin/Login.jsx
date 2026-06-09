@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -79,11 +81,19 @@ export default function Login() {
       console.log("✅ Login success:", result);
 
       if (result.token) {
-        localStorage.setItem("token", result.token);
+        localStorage.setItem("authToken", result.token);
+      }
+
+      if (result.email) {
+        localStorage.setItem("email", result.email);
+      }
+
+      if (result.role) {
+        localStorage.setItem("role", JSON.stringify(result.role));
       }
 
       alert("Login successful!");
-      window.location.href = "/WardenDashboard";
+      navigate(result.role === "WARDEN" ? "/WardenDashboard" : "/StudentDashboard", { replace: true });
     } catch (error) {
       console.error("❌ Login failed:", error);
       alert("Error: " + error.message);

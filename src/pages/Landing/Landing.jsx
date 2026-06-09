@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { cards, rotatingTexts } from "./Constants";
 import "./Landingstyle.css";
 
@@ -49,13 +50,13 @@ Streamlines complaints and mess feedback .
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
-            <a
-              href="/Login"
+            <Link
+              to="/login"
               className="bg-[#1B3C53] text-white px-8 py-3 rounded-lg font-semibold shadow-md 
               hover:bg-blue-700 transition-all duration-300 ease-in-out"
             >
               Let's Get started
-            </a>
+            </Link>
             
           </div>
         </div>
