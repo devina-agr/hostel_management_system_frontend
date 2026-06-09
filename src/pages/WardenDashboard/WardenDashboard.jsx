@@ -9,6 +9,7 @@ const WardenDashboard = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [complaintFilter, setComplaintFilter] = useState(null);
   const [showPassword, setShowPassword] = useState({});
 
   // API base (Option B)
@@ -309,6 +310,10 @@ const WardenDashboard = () => {
     (student.room || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const studentsWithComplaints = students.filter(s => Array.isArray(s.complaints) && s.complaints.length > 0);
+
+  const displayedStudents = complaintFilter ? studentsWithComplaints : filteredStudents;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -397,7 +402,7 @@ const WardenDashboard = () => {
             </button>
             
             <button
-              onClick={() => setActiveTab('students')}
+              onClick={() => { setActiveTab('students'); setComplaintFilter(null); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 activeTab === 'students' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
               }`}
@@ -465,6 +470,12 @@ const WardenDashboard = () => {
                   </div>
                   <p className="text-gray-600 text-sm mb-1">See All Complaints</p>
                   <p className="text-3xl font-bold text-gray-900">{dashboardData.pendingComplaints} <span className="text-base text-gray-500 font-normal">Pending</span></p>
+                  <button
+                    onClick={() => { setActiveTab('students'); setComplaintFilter(true); }}
+                    className="mt-4 text-sm text-blue-600 hover:underline"
+                  >
+                    View students with complaints
+                  </button>
                 </div>
 
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow">
@@ -632,7 +643,14 @@ const WardenDashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredStudents.map(student => (
+                      {displayedStudents.length === 0 ? (
+                        <tr>
+                          <td className="px-6 py-4 text-center text-gray-500" colSpan={5}>
+                            No students found{complaintFilter ? ' with complaints.' : '.'}
+                          </td>
+                        </tr>
+                      ) : (
+                        displayedStudents.map(student => (
                         <tr key={student.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
@@ -654,8 +672,9 @@ const WardenDashboard = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <button className="text-blue-600 hover:text-blue-700 font-medium">View Details</button>
                           </td>
-                        </tr>
-                      ))}
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
