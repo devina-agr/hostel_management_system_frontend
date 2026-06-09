@@ -64,9 +64,9 @@ const WardenDashboard = () => {
 
  
   useEffect(() => {
-    fetchDashboard();
+    // Backend WardenController exposes '/all-students' and '/me'
+    // Avoid calling non-existing endpoints like '/dashboard' here.
     fetchStudents();
-    fetchNotifications();
     fetchWardenProfile();
   }, []);
 
@@ -92,7 +92,7 @@ const WardenDashboard = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await apiFetch('/warden/students', {
+      const res = await apiFetch('/warden/all-students', {
         headers: authHeaders()
       });
       if (res.ok) {
@@ -126,7 +126,7 @@ const WardenDashboard = () => {
 
   const fetchWardenProfile = async () => {
     try {
-      const res = await apiFetch('/warden/profile', {
+      const res = await apiFetch('/warden/me', {
         headers: authHeaders()
       });
       if (res.ok) {
@@ -252,7 +252,7 @@ const WardenDashboard = () => {
     e.preventDefault();
     try {
       const res = await apiFetch('/warden/update-profile', {
-        method: 'PUT',
+        method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(profileForm)
       });
@@ -282,7 +282,7 @@ const WardenDashboard = () => {
 
     try {
       const res = await apiFetch('/warden/update-profile/update-password', {
-        method: 'PUT',
+        method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
           oldPassword: passwordForm.oldPassword,

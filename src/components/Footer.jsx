@@ -109,7 +109,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-gray-700 mt-15 pt-4 text-center text-xs text-gray-400">
-        © 2024 HostelEase. All rights reserved.{" "}
+        © 2024 HostelEzz. All rights reserved.{" "}
         <a href="#" className="hover:text-white">
           Privacy Policy
         </a>{" "}
