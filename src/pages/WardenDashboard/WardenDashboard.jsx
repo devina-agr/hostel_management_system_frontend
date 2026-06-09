@@ -21,9 +21,9 @@ const WardenDashboard = () => {
 
   // Data state (kept same variable names)
   const [dashboardData, setDashboardData] = useState({
-    totalStudents: 1,
+    totalStudents: 0,
     studentGrowth: '',
-    pendingComplaints: 1,
+    pendingComplaints: 0,
     urgentComplaints: 0,
     inProgressComplaints: 0,
     averageRating: 0,
@@ -33,25 +33,17 @@ const WardenDashboard = () => {
     completedMatches: 0  });
 
   const [wardenProfile, setWardenProfile] = useState({
-    id: 'W001',
-    name: 'Priyanka Chaudhary',
-    email: 'priyanka@gmail.com',
-    contactNo: '+91 98765 43210',
-    hostelType: 'GIRLS'
+    id: '',
+    name: '',
+    email: '',
+    contactNo: '',
+    hostelType: ''
   });
 
   const [notifications, setNotifications] = useState([
-    { id: 1, message: 'New complaint registered', time: '5 min ago', unread: true },
-    { id: 2, message: '3 roommate matches pending', time: '1 hour ago', unread: true },
-    { id: 3, message: 'New student registration', time: '2 hours ago', unread: false }
   ]);
 
   const [students, setStudents] = useState([
-    { id: 1, name: 'Devina', room: '102-B', date: 'Oct 24, 2023', status: 'Active', avatar: '👩' }
-    // { id: 2, name: 'Sarah ', room: '205-A', date: 'Oct 23, 2023', status: 'Pending', avatar: '👩' },
-    // { id: 3, name: 'Devina', room: '--', date: 'Oct 23, 2023', status: 'Unassigned', avatar: '👨' },
-    // { id: 4, name: 'Gargie', room: '301-C', date: 'Oct 22, 2023', status: 'Active', avatar: '👩' },
-    // { id: 5, name: 'Kritika', room: '104-A', date: 'Oct 21, 2023', status: 'Active', avatar: '👨' }
   ]);
 
   const [staffForm, setStaffForm] = useState({
@@ -313,8 +305,8 @@ const WardenDashboard = () => {
   };
 
   const filteredStudents = students.filter(student => 
-    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.room.toLowerCase().includes(searchQuery.toLowerCase())
+    (student.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (student.room || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -361,7 +353,7 @@ const WardenDashboard = () => {
                 <p className="text-sm text-gray-500">Head Warden</p>
               </div>
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                {wardenProfile.name.charAt(0)}
+                {(wardenProfile.name || '').charAt(0)}
               </div>
             </div>
           </div>
