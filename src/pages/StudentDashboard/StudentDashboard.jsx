@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UtensilsCrossed, MessageSquare, AlertCircle, Star, X, User, Bell, Upload } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+import { apiFetch } from '../../lib/api';
 const StudentDashboard = () => {
+  const navigate = useNavigate();
   const [menuData, setMenuData] = useState({
     day: 'MONDAY',
     meals: {
@@ -28,9 +30,8 @@ const StudentDashboard = () => {
     rating: 0,
     comment: ''
   });
+  const [profileComplete, setProfileComplete] = useState(false);
 
-  const API_BASE_URL = `${API_URL}`;
-  
   const getAuthToken = () => localStorage.getItem('authToken');
   
 
@@ -46,9 +47,9 @@ const StudentDashboard = () => {
   const fetchAllData = async () => {
     setLoading(true);
     try {
+      const profileData = await fetchProfile();
       await Promise.all([
-        fetchProfile(),
-        fetchMenu(),
+        fetchMenu(profileData),
         fetchMyComplaints(),
         fetchMyFeedbacks()
       ]);
@@ -61,21 +62,28 @@ const StudentDashboard = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/student/profile`, {
+      const response = await apiFetch('/student/profile', {
         headers: authHeaders
       });
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
+        setProfileComplete(Boolean(data?.profileComplete));
+        return data;
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
+    return null;
   };
 
-  const fetchMenu = async () => {
+  const fetchMenu = async (currentProfile = profile) => {
+    if (!currentProfile?.profileComplete) {
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_BASE_URL}/menu`, {
+      const response = await apiFetch('/menu', {
         headers: authHeaders
       });
       if (response.ok) {
@@ -93,7 +101,7 @@ const StudentDashboard = () => {
 
   const fetchMyComplaints = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/complaint/my`, {
+      const response = await apiFetch('/complaint/my', {
         headers: authHeaders
       });
       if (response.ok) {
@@ -107,7 +115,7 @@ const StudentDashboard = () => {
 
   const fetchMyFeedbacks = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/feedback/my`, {
+      const response = await apiFetch('/feedback/my', {
         headers: authHeaders
       });
       if (response.ok) {
@@ -126,7 +134,7 @@ const StudentDashboard = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/complaint`, {
+      const response = await apiFetch('/complaint', {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify(complaintForm)
@@ -153,7 +161,7 @@ const StudentDashboard = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/feedback`, {
+      const response = await apiFetch('/feedback', {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify(feedbackForm)
@@ -223,7 +231,11 @@ const StudentDashboard = () => {
               <button className="p-2 hover:bg-gray-100 rounded-full">
                 <Bell className="w-4 h-4 text-gray-600" />
               </button>
-              <button className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 rounded-full hover:bg-orange-100">
+              <button
+                type="button"
+                onClick={() => navigate('/profile')}
+                className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 rounded-full hover:bg-orange-100"
+              >
                 <User className="w-4 h-4 text-orange-600" />
                 <span className="text-sm text-orange-600 font-medium">Profile</span>
               </button>
@@ -244,9 +256,18 @@ const StudentDashboard = () => {
             <div className="flex-1">
               <h3 className="text-base font-semibold text-gray-900 mb-1">Find Your Perfect Roommate!</h3>
               <p className="text-sm text-gray-700 mb-3">Complete your Roommate Preference Form in your profile to start seeing potential matches.</p>
-              <button className="px-4 py-1.5 bg-blue-500 text-white rounded text-sm font-medium hover:bg-blue-600">
+              <button
+                type="button"
+                onClick={() => navigate('/profile')}
+                className="px-4 py-1.5 bg-blue-500 text-white rounded text-sm font-medium hover:bg-blue-600"
+              >
                 Go to Profile
               </button>
+              {!profileComplete && (
+                <p className="mt-3 text-xs font-medium text-blue-700">
+                  Finish your profile first to load the live mess menu.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -343,7 +364,11 @@ const StudentDashboard = () => {
               </div>
               <p className="text-xs text-center text-gray-500 mb-3">Complete your profile to unlock matches.</p>
               
-              <button className="w-full px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium hover:bg-blue-600 mt-auto">
+              <button
+                type="button"
+                onClick={() => navigate('/preferences')}
+                className="w-full px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium hover:bg-blue-600 mt-auto"
+              >
                 Update Preferences
               </button>
             </div>

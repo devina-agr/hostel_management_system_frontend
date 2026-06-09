@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+import { apiFetch } from "../../lib/api";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +56,7 @@ export default function Login() {
   const handleSubmit = async () => {
     console.log("Login Data", formData);
     try {
-      const response = await fetch( `${API_URL}/auth/login`, {
+      const response = await apiFetch("/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -72,10 +72,12 @@ export default function Login() {
       }
 
       const result = await response.json();
-      console.log("email:", formData.email);
-      console.log("token:", formData.token);
-      console.log("role:",formData.role);
-      // console.log("rolevalue:",formData.role[0]);
+      const normalizedRoles = Array.isArray(result.role)
+        ? result.role
+        : result.role
+          ? [result.role]
+          : [];
+      const isWarden = normalizedRoles.some((role) => String(role).toUpperCase().includes("WARDEN"));
 
 
       console.log("✅ Login success:", result);
@@ -88,12 +90,10 @@ export default function Login() {
         localStorage.setItem("email", result.email);
       }
 
-      if (result.role) {
-        localStorage.setItem("role", JSON.stringify(result.role));
-      }
+      localStorage.setItem("role", JSON.stringify(normalizedRoles));
 
       alert("Login successful!");
-      navigate(result.role === "WARDEN" ? "/WardenDashboard" : "/StudentDashboard", { replace: true });
+      navigate(isWarden ? "/WardenDashboard" : "/StudentDashboard", { replace: true });
     } catch (error) {
       console.error("❌ Login failed:", error);
       alert("Error: " + error.message);

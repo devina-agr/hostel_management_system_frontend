@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, AlertTriangle, Star, UserPlus, Settings, Bell, Search, ChevronRight, X, Check, Clock, UserCheck, Building2, Phone, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+import { apiFetch } from '../../lib/api';
 const WardenDashboard = () => {
   // Local UI state (unchanged)
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -12,8 +12,6 @@ const WardenDashboard = () => {
   const [showPassword, setShowPassword] = useState({});
 
   // API base (Option B)
-  const API_BASE_URL = `${API_URL}`;
-
   const getAuthToken = () => localStorage.getItem('authToken');
 
   const authHeaders = () => ({
@@ -83,7 +81,7 @@ const WardenDashboard = () => {
 
   const fetchDashboard = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/warden/dashboard`, {
+      const res = await apiFetch('/warden/dashboard', {
         headers: authHeaders()
       });
       if (res.ok) {
@@ -102,7 +100,7 @@ const WardenDashboard = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/warden/students`, {
+      const res = await apiFetch('/warden/students', {
         headers: authHeaders()
       });
       if (res.ok) {
@@ -119,7 +117,7 @@ const WardenDashboard = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/warden/notifications`, {
+      const res = await apiFetch('/warden/notifications', {
         headers: authHeaders()
       });
       if (res.ok) {
@@ -136,7 +134,7 @@ const WardenDashboard = () => {
 
   const fetchWardenProfile = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/warden/profile`, {
+      const res = await apiFetch('/warden/profile', {
         headers: authHeaders()
       });
       if (res.ok) {
@@ -171,7 +169,7 @@ const WardenDashboard = () => {
     setGeneratedPassword(password);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/warden/register-staff`, {
+      const res = await apiFetch('/warden/register-staff', {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
@@ -222,7 +220,7 @@ const WardenDashboard = () => {
 
   const sendStaffCredentialsEmail = async (email, name, password) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/email/send-staff-credentials`, {
+      const res = await apiFetch('/email/send-staff-credentials', {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
@@ -261,7 +259,7 @@ const WardenDashboard = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_BASE_URL}/warden/update-profile`, {
+      const res = await apiFetch('/warden/update-profile', {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify(profileForm)
@@ -291,7 +289,7 @@ const WardenDashboard = () => {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/warden/update-profile/update-password`, {
+      const res = await apiFetch('/warden/update-profile/update-password', {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify({

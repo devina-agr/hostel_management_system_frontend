@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../lib/api';
 
 export default function PreferenceForm() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     scheduleType: '',
     cleanlinessLevel: '',
@@ -13,6 +16,17 @@ export default function PreferenceForm() {
   });
 
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const savedPreferences = localStorage.getItem('roommatePreferences');
+    if (savedPreferences) {
+      try {
+        setFormData((prev) => ({ ...prev, ...JSON.parse(savedPreferences) }));
+      } catch {
+        localStorage.removeItem('roommatePreferences');
+      }
+    }
+  }, []);
 
   const handleSelectChange = (field, value) => {
     setFormData(prev => ({
@@ -43,9 +57,44 @@ export default function PreferenceForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Preference Form Submitted:', formData);
-    // Redirect to dashboard or call API
-    window.location.href = '/dashboard';
+    const preferencePayload = {
+      scheduleType: formData.scheduleType,
+      cleanlinessLevel: formData.cleanlinessLevel,
+      noisePreference: formData.noisePreference,
+      studyPreference: formData.studyPreference,
+      allergy: formData.allergy,
+      hobbies: formData.hobbies,
+      roomTempPreference: formData.roomTempPreference,
+      roomType: formData.roomType
+    };
+
+    const savePreferences = async () => {
+      try {
+        const response = await apiFetch('/preference', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify(preferencePayload)
+        });
+
+        if (response.ok) {
+          localStorage.setItem('roommatePreferences', JSON.stringify(preferencePayload));
+          alert('Preference form submitted successfully!');
+          navigate('/StudentDashboard', { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.error('Preference API failed, falling back to local storage:', error);
+      }
+
+      localStorage.setItem('roommatePreferences', JSON.stringify(preferencePayload));
+      alert('Preferences saved locally. The backend preference endpoint is not accepting the current payload shape yet.');
+      navigate('/StudentDashboard', { replace: true });
+    };
+
+    savePreferences();
   };
 
   return (

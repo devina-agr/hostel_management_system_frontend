@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../lib/api';
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -35,7 +38,7 @@ const handleSubmit = async () => {
     console.log("Sending signup data:", formData);
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/register", {
+      const response = await apiFetch("/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,17 +52,22 @@ const handleSubmit = async () => {
       }
 
       const result = await response.json();
+      const normalizedRoles = Array.isArray(result.role)
+        ? result.role
+        : result.role
+          ? [result.role]
+          : ["ROLE_STUDENT"];
 
       console.log("Registration response:", result);
       console.log("JWT Token received:", result.token);
 
       localStorage.setItem("authToken", result.token);
       localStorage.setItem("email", result.email);
-      localStorage.setItem("role", JSON.stringify(result.role));
+      localStorage.setItem("role", JSON.stringify(normalizedRoles));
 
       alert("Registration successful! Redirecting to dashboard...");
 
-      window.location.href = "/StudentDashboard";
+      navigate("/StudentDashboard", { replace: true });
 
     } catch (error) {
       console.error("Registration failed:", error);
